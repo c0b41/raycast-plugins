@@ -1,0 +1,3 @@
+# DisplayBrightness Changelog
+
+## [Initial Version]
