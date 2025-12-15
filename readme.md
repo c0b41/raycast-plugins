@@ -6,6 +6,8 @@ This repo contains the Raycast extensions I’m working on, including both impro
 
 - [visual-studio-code-recent-projects](./visual-studio-code-recent-projects/) - `fork`
 
+- [nba-game-viewer](./nba-game-viewer/) - `fork`
+
 - [display-brightness](./display-brightness/) - `windows only`
 
 - [incognito-browser](./incognito-browser/) - `windows only`
