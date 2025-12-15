@@ -17,7 +17,9 @@ type ExtensionPreferences = {
   /** Number of days of scores - Number of days of scores to show in commands. */
   "numDaysScores": string,
   /** Show Details - Show details of the games in the Raycast window. */
-  "showDetails": boolean
+  "showDetails": boolean,
+  /** Timezone Location - Settings to show correct date and time */
+  "timezone": string
 }
 
 /** Preferences accessible in all the extension's commands */

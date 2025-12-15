@@ -80,6 +80,15 @@
       "label": "Show details of the games in the Raycast window",
       "required": false,
       "default": false
+    },
+    {
+      "name": "timezone",
+      "type": "textfield",
+      "label": "Timezone",
+      "description": "Settings to show correct date and time",
+      "required": false,
+      "title": "Timezone Location",
+      "default": ""
     }
   ],
   "categories": [
@@ -124,7 +133,9 @@
   ],
   "dependencies": {
     "@raycast/api": "^1.103.7",
-    "@raycast/utils": "^2.2.2"
+    "@raycast/utils": "^2.2.2",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0"
   },
   "devDependencies": {
     "@raycast/eslint-config": "^2.0.4",
