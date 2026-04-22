@@ -5,9 +5,11 @@ export interface ExtensionPreferences {
   step: string;
 }
 
+const MIN_BRIGHTNESS = 0;
+const MAX_BRIGHTNESS = 100;
+
 function getStep(defaultStep: number): number {
   const { step } = getPreferenceValues<ExtensionPreferences>();
-
   return step ? Number(step) : defaultStep;
 }
 
@@ -27,9 +29,11 @@ export async function _setBrightness(deviceName: string, value: number): Promise
 
 export async function _increaseBrightness(deviceName: string): Promise<string> {
   try {
-    let step = getStep(5);
-    let currentBrightness = getBrightness(deviceName);
-    setBrightness(deviceName, currentBrightness + step);
+    const step = getStep(5);
+    const currentBrightness = getBrightness(deviceName);
+    const next = currentBrightness + step;
+    const wrapped = next > MAX_BRIGHTNESS ? MIN_BRIGHTNESS : next;
+    setBrightness(deviceName, wrapped);
     return "";
   } catch (error) {
     console.error(`Failed to set brightness for ${deviceName}`, error);
@@ -39,9 +43,11 @@ export async function _increaseBrightness(deviceName: string): Promise<string> {
 
 export async function _decreaseBrightness(deviceName: string): Promise<string> {
   try {
-    let step = getStep(5);
-    let currentBrightness = getBrightness(deviceName);
-    setBrightness(deviceName, currentBrightness - step);
+    const step = getStep(5);
+    const currentBrightness = getBrightness(deviceName);
+    const next = currentBrightness - step;
+    const wrapped = next < MIN_BRIGHTNESS ? MAX_BRIGHTNESS : next;
+    setBrightness(deviceName, wrapped);
     return "";
   } catch (error) {
     console.error(`Failed to set brightness for ${deviceName}`, error);
@@ -51,10 +57,9 @@ export async function _decreaseBrightness(deviceName: string): Promise<string> {
 
 export async function fetchDisplays(): Promise<[]> {
   try {
-    let list = await listDevices();
-    let displays = JSON.parse(list).devices;
+    const list = await listDevices();
+    const displays = JSON.parse(list).devices;
 
-    //console.log(list);
     return displays.map((display: Display) => {
       return {
         name: deviceName(display.device_name),
