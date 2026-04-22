@@ -6,9 +6,11 @@ export interface ExtensionPreferences {
   step: string;
 }
 
+const MIN_VOLUME = 0;
+const MAX_VOLUME = 100;
+
 function getStep(defaultStep: number): number {
   const { step } = getPreferenceValues<ExtensionPreferences>();
-
   return step ? Number(step) : defaultStep;
 }
 
@@ -23,46 +25,39 @@ export async function _setVolume(session: Session): Promise<string> {
 }
 
 export async function _increaseVolume(session: Session): Promise<string> {
-  let step = getStep(5);
-  let current = percentageValue(session.volume);
-  let updatedVol = current + step;
+  const step = getStep(5);
+  const current = percentageValue(session.volume);
+  const next = current + step;
+  const wrapped = next > MAX_VOLUME ? MIN_VOLUME : next;
 
   try {
-    if (updatedVol > 100) {
-      setAppVolume(session.pid, 100);
-    } else {
-      setAppVolume(session.pid, updatedVol);
-    }
+    setAppVolume(session.pid, wrapped);
     return "";
   } catch (error) {
-    console.error(`Failed to set volume for ${session.appName} ${updatedVol}`, error);
+    console.error(`Failed to set volume for ${session.appName} ${wrapped}`, error);
     return "";
   }
 }
 
 export async function _decreaseVolume(session: Session): Promise<string> {
-  let step = getStep(5);
-  let current = percentageValue(session.volume);
-  let updatedVol = current - step;
+  const step = getStep(5);
+  const current = percentageValue(session.volume);
+  const next = current - step;
+  const wrapped = next < MIN_VOLUME ? MAX_VOLUME : next;
 
   try {
-    if (updatedVol <= 0) {
-      setAppVolume(session.pid, 0);
-    } else {
-      setAppVolume(session.pid, updatedVol);
-    }
-
+    setAppVolume(session.pid, wrapped);
     return "";
   } catch (error) {
-    console.error(`Failed to set volume for ${session.appName} ${updatedVol}`, error);
+    console.error(`Failed to set volume for ${session.appName} ${wrapped}`, error);
     return "";
   }
 }
 
 export async function fetchVolumes(): Promise<[]> {
   try {
-    let list = await listAudioSessions();
-    let devices = JSON.parse(list);
+    const list = await listAudioSessions();
+    const devices = JSON.parse(list);
 
     const uniqueDevices = devices.reduce((accumulator: any[], current: any) => {
       if (!accumulator.find((item) => item.pid === current.pid)) {

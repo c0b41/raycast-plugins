@@ -1,18 +1,19 @@
-import { useState, useEffect } from "react";
-import { List, Color, ActionPanel, Action, showToast, Toast, Icon } from "@raycast/api";
-import { showFailureToast, useCachedPromise, createDeeplink, DeeplinkType } from "@raycast/utils";
+import { useState, useEffect, useRef } from "react";
+import { List, ActionPanel, Action, showToast, Toast, Icon } from "@raycast/api";
+import { showFailureToast, useCachedPromise } from "@raycast/utils";
 import { fetchVolumes, Session, _increaseVolume, _decreaseVolume, _setVolume } from "./commands";
 import { percentageValue, capitalize } from "./utils";
 import events from "./events";
 
+const REFRESH_DEBOUNCE_MS = 1000;
+
 type VolumeItemProps = {
   session: Session;
   onToggle: () => void;
+  isRefreshing: boolean;
 };
 
-function VolumeItem({ session, onToggle }: VolumeItemProps) {
-
-  // Helper to wrap actions with toast notifications.
+function VolumeItem({ session, onToggle, isRefreshing }: VolumeItemProps) {
   async function handleAction(
     actionFn: () => Promise<string>,
     successTitle: string,
@@ -77,7 +78,7 @@ function VolumeItem({ session, onToggle }: VolumeItemProps) {
             }
           />
           <Action
-            title="Toggle Session"
+            title="Toggle Mute"
             icon={session.muted ? Icon.SpeakerOff : Icon.SpeakerOn}
             shortcut={{
               windows: { modifiers: ["ctrl"], key: "m" },
@@ -86,11 +87,16 @@ function VolumeItem({ session, onToggle }: VolumeItemProps) {
             onAction={() =>
               handleAction(
                 () => _setVolume(session),
-                "Volume Decreased",
+                capitalize(session.appName),
                 `${capitalize(session.appName)} session toggled.`,
-                "session toggle failed",
+                "Session toggle failed",
               )
             }
+          />
+          <Action
+            title={isRefreshing ? "Refreshing..." : "Refresh Sessions"}
+            icon={{ source: Icon.ArrowClockwise, tintColor: isRefreshing ? "#FFD700" : undefined }}
+            onAction={onToggle}
           />
           {/*<Action.CreateQuicklink
             title="Create Deeplink"
@@ -114,42 +120,60 @@ function VolumeItem({ session, onToggle }: VolumeItemProps) {
 
 export default function ManageMixerList() {
   const [refreshCount, setRefreshCount] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { isLoading, data, revalidate } = useCachedPromise(fetchVolumes, [], {
     keepPreviousData: true,
     initialData: [],
   });
 
-  // Load displays.
   useEffect(() => {
     async function loadVolumes() {
       try {
+        setIsRefreshing(true);
         revalidate();
       } catch (error) {
         console.error("Failed to load volumes", error);
+      } finally {
+        setIsRefreshing(false);
       }
     }
     loadVolumes();
   }, [refreshCount]);
 
-  // Listen for refresh events emitted by the ResolutionList.
   useEffect(() => {
-    const handler = () => setRefreshCount((prev) => prev + 1);
+    const handler = () => debouncedRefresh();
     events.on("refresh", handler);
     return () => {
       events.off("refresh", handler);
     };
   }, []);
 
-  const handleToggleRefresh = () => {
-    setRefreshCount((prev) => prev + 1);
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, []);
+
+  const debouncedRefresh = () => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    setIsRefreshing(true);
+    debounceTimer.current = setTimeout(() => {
+      setRefreshCount((prev) => prev + 1);
+      setIsRefreshing(false);
+    }, REFRESH_DEBOUNCE_MS);
   };
 
   return (
     <List isLoading={isLoading}>
       <List.Section title="Volume Sessions">
         {data.map((session: Session) => (
-          <VolumeItem key={session.pid} session={session} onToggle={handleToggleRefresh} />
+          <VolumeItem key={session.pid} session={session} onToggle={debouncedRefresh} isRefreshing={isRefreshing} />
         ))}
       </List.Section>
     </List>
