@@ -4,17 +4,18 @@ import { showFailureToast, useCachedPromise } from "@raycast/utils";
 import { fetchDisplays, Display, _increaseBrightness, _decreaseBrightness } from "./commands";
 import events from "./events";
 
-const REFRESH_DEBOUNCE_MS = 1000;
+const REFRESH_DEBOUNCE_MS = 400;
 const MIN_BRIGHTNESS = 0;
 const MAX_BRIGHTNESS = 100;
 
 type DisplayItemProps = {
   display: Display;
-  onToggle: () => void;
+  onAction: () => void;
+  onRefresh: () => void;
   isRefreshing: boolean;
 };
 
-function DisplayItem({ display, onToggle, isRefreshing }: DisplayItemProps) {
+function DisplayItem({ display, onAction, onRefresh, isRefreshing }: DisplayItemProps) {
   async function handleAction(
     actionFn: () => Promise<string>,
     successTitle: string,
@@ -24,21 +25,11 @@ function DisplayItem({ display, onToggle, isRefreshing }: DisplayItemProps) {
     try {
       const result = await actionFn();
       await showToast({ title: successTitle, message: result || successMessage, style: Toast.Style.Success });
-      onToggle();
+      onAction();
     } catch (error) {
       showFailureToast(error, { title: errorTitle });
     }
   }
-
-  const getWrappedBrightness = (current: number, step: number, direction: "increase" | "decrease"): number => {
-    if (direction === "increase") {
-      const next = current + step;
-      return next > MAX_BRIGHTNESS ? MIN_BRIGHTNESS : next;
-    } else {
-      const next = current - step;
-      return next < MIN_BRIGHTNESS ? MAX_BRIGHTNESS : next;
-    }
-  };
 
   return (
     <List.Item
@@ -88,7 +79,7 @@ function DisplayItem({ display, onToggle, isRefreshing }: DisplayItemProps) {
           <Action
             title={isRefreshing ? "Refreshing..." : "Refresh Displays"}
             icon={{ source: Icon.ArrowClockwise, tintColor: isRefreshing ? Color.Yellow : Color.PrimaryText }}
-            onAction={onToggle}
+            onAction={onRefresh}
           />
         </ActionPanel>
       }
@@ -107,17 +98,7 @@ export default function ManageDisplays() {
   });
 
   useEffect(() => {
-    async function loadDisplays() {
-      try {
-        setIsRefreshing(true);
-        revalidate();
-      } catch (error) {
-        console.error("Failed to load displays", error);
-      } finally {
-        setIsRefreshing(false);
-      }
-    }
-    loadDisplays();
+    revalidate();
   }, [refreshCount]);
 
   useEffect(() => {
@@ -130,16 +111,16 @@ export default function ManageDisplays() {
 
   useEffect(() => {
     return () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
   }, []);
 
+  const handleAction = () => {
+    revalidate();
+  };
+
   const debouncedRefresh = () => {
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
     setIsRefreshing(true);
     debounceTimer.current = setTimeout(() => {
       setRefreshCount((prev) => prev + 1);
@@ -154,7 +135,8 @@ export default function ManageDisplays() {
           <DisplayItem
             key={display.device_name}
             display={display}
-            onToggle={debouncedRefresh}
+            onAction={handleAction}
+            onRefresh={debouncedRefresh}
             isRefreshing={isRefreshing}
           />
         ))}

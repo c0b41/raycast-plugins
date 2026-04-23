@@ -5,15 +5,16 @@ import { fetchVolumes, Session, _increaseVolume, _decreaseVolume, _setVolume } f
 import { percentageValue, capitalize } from "./utils";
 import events from "./events";
 
-const REFRESH_DEBOUNCE_MS = 1000;
+const REFRESH_DEBOUNCE_MS = 400;
 
 type VolumeItemProps = {
   session: Session;
-  onToggle: () => void;
+  onAction: () => void;
+  onRefresh: () => void;
   isRefreshing: boolean;
 };
 
-function VolumeItem({ session, onToggle, isRefreshing }: VolumeItemProps) {
+function VolumeItem({ session, onAction, onRefresh, isRefreshing }: VolumeItemProps) {
   async function handleAction(
     actionFn: () => Promise<string>,
     successTitle: string,
@@ -23,7 +24,7 @@ function VolumeItem({ session, onToggle, isRefreshing }: VolumeItemProps) {
     try {
       const result = await actionFn();
       await showToast({ title: successTitle, message: result || successMessage, style: Toast.Style.Success });
-      onToggle();
+      onAction();
     } catch (error) {
       showFailureToast(error, { title: errorTitle });
     }
@@ -96,7 +97,7 @@ function VolumeItem({ session, onToggle, isRefreshing }: VolumeItemProps) {
           <Action
             title={isRefreshing ? "Refreshing..." : "Refresh Sessions"}
             icon={{ source: Icon.ArrowClockwise, tintColor: isRefreshing ? "#FFD700" : undefined }}
-            onAction={onToggle}
+            onAction={onRefresh}
           />
           {/*<Action.CreateQuicklink
             title="Create Deeplink"
@@ -129,17 +130,7 @@ export default function ManageMixerList() {
   });
 
   useEffect(() => {
-    async function loadVolumes() {
-      try {
-        setIsRefreshing(true);
-        revalidate();
-      } catch (error) {
-        console.error("Failed to load volumes", error);
-      } finally {
-        setIsRefreshing(false);
-      }
-    }
-    loadVolumes();
+    revalidate();
   }, [refreshCount]);
 
   useEffect(() => {
@@ -152,16 +143,16 @@ export default function ManageMixerList() {
 
   useEffect(() => {
     return () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
   }, []);
 
+  const handleAction = () => {
+    revalidate();
+  };
+
   const debouncedRefresh = () => {
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
     setIsRefreshing(true);
     debounceTimer.current = setTimeout(() => {
       setRefreshCount((prev) => prev + 1);
@@ -173,7 +164,13 @@ export default function ManageMixerList() {
     <List isLoading={isLoading}>
       <List.Section title="Volume Sessions">
         {data.map((session: Session) => (
-          <VolumeItem key={session.pid} session={session} onToggle={debouncedRefresh} isRefreshing={isRefreshing} />
+          <VolumeItem
+            key={session.pid}
+            session={session}
+            onAction={handleAction}
+            onRefresh={debouncedRefresh}
+            isRefreshing={isRefreshing}
+          />
         ))}
       </List.Section>
     </List>
