@@ -1,0 +1,75 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "case-converter",
+  "title": "Case Converter",
+  "description": "Convert clipboard text to different cases and paste instantly",
+  "icon": "extension_icon.png",
+  "author": "c0b41",
+  "categories": [
+    "Productivity",
+    "Text"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "lower-case",
+      "title": "Convert to Lowercase",
+      "description": "Converts clipboard text to lowercase and pastes it",
+      "mode": "no-view"
+    },
+    {
+      "name": "upper-case",
+      "title": "Convert to Uppercase",
+      "description": "Converts clipboard text to UPPERCASE and pastes it",
+      "mode": "no-view"
+    },
+    {
+      "name": "sentence-case",
+      "title": "Convert to Sentence Case",
+      "description": "Converts clipboard text to sentence case and pastes it",
+      "mode": "no-view"
+    },
+    {
+      "name": "capitalized-case",
+      "title": "Convert to Capitalized Case",
+      "description": "Capitalizes the first letter of each word and pastes it",
+      "mode": "no-view"
+    },
+    {
+      "name": "alternating-case",
+      "title": "Convert to Alternating Case",
+      "description": "Converts clipboard text to aLtErNaTiNg cAsE and pastes it",
+      "mode": "no-view"
+    },
+    {
+      "name": "title-case",
+      "title": "Convert to Title Case",
+      "description": "Converts clipboard text to Title Case and pastes it",
+      "mode": "no-view"
+    },
+    {
+      "name": "inverse-case",
+      "title": "Convert to Inverse Case",
+      "description": "Inverts the case of clipboard text and pastes it",
+      "mode": "no-view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.104.19"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^1.0.11",
+    "@types/node": "^20.8.10",
+    "@types/react": "^18.3.3",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.4.5"
+  },
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}
