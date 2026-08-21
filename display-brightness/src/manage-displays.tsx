@@ -48,7 +48,7 @@ function DisplayItem({ display, onAction, onRefresh, isRefreshing }: DisplayItem
             title="Increase Brightness"
             icon={Icon.ArrowRightCircleFilled}
             shortcut={{
-              windows: { modifiers: ["ctrl"], key: "arrowRight" },
+              Windows: { modifiers: ["ctrl"], key: "arrowRight" },
               macOS: { modifiers: ["cmd"], key: "arrowRight" },
             }}
             onAction={() =>
@@ -64,7 +64,7 @@ function DisplayItem({ display, onAction, onRefresh, isRefreshing }: DisplayItem
             title="Decrease Brightness"
             icon={Icon.ArrowLeftCircleFilled}
             shortcut={{
-              windows: { modifiers: ["ctrl"], key: "arrowLeft" },
+              Windows: { modifiers: ["ctrl"], key: "arrowLeft" },
               macOS: { modifiers: ["cmd"], key: "arrowLeft" },
             }}
             onAction={() =>

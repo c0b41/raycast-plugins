@@ -50,7 +50,7 @@ function VolumeItem({ session, onAction, onRefresh, isRefreshing }: VolumeItemPr
             title="Increase Volume"
             icon={Icon.ArrowUp}
             shortcut={{
-              windows: { modifiers: ["ctrl"], key: "arrowRight" },
+              Windows: { modifiers: ["ctrl"], key: "arrowRight" },
               macOS: { modifiers: ["cmd"], key: "arrowRight" },
             }}
             onAction={() =>
@@ -66,7 +66,7 @@ function VolumeItem({ session, onAction, onRefresh, isRefreshing }: VolumeItemPr
             title="Decrease Volume"
             icon={Icon.ArrowDown}
             shortcut={{
-              windows: { modifiers: ["ctrl"], key: "arrowLeft" },
+              Windows: { modifiers: ["ctrl"], key: "arrowLeft" },
               macOS: { modifiers: ["cmd"], key: "arrowLeft" },
             }}
             onAction={() =>
